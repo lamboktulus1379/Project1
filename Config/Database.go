@@ -8,6 +8,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
+	"mygra.tech/project1/Models"
 )
 
 var DB *gorm.DB
@@ -18,6 +19,21 @@ type DBConfig struct {
 	User string
 	DBName string
 	Password string
+}
+
+func DatabaseOpen() *gorm.DB {
+	// Creating a connection to the database
+	db, err := gorm.Open(os.Getenv("DB_TYPE"), DbURL(BuildDBConfig()));
+	if err != nil {
+		fmt.Println("Statuses: ", err)
+	}
+
+	// defer db.Close()
+
+	// Run the migrations: todo struct
+	db.AutoMigrate(&Models.Todo{})
+
+	return db
 }
 
 func BuildDBConfig() *DBConfig {
