@@ -1,4 +1,4 @@
-package Response
+package Responses
 
 type ResponseApi struct {
 	StatusCode    string      `json:"statusCode"`

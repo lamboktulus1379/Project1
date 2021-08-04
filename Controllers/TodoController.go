@@ -9,7 +9,8 @@ import (
 	"mygra.tech/project1/Models"
 	"mygra.tech/project1/Services"
 	"mygra.tech/project1/Utils/Constants"
-	"mygra.tech/project1/Utils/Response"
+	"mygra.tech/project1/Utils/Formatters"
+	"mygra.tech/project1/Utils/Responses"
 )
 
 type todoController struct {
@@ -22,27 +23,22 @@ func InitTodoController(service Services.TodoService) *todoController {
 
 // List all todos
 func (controller *todoController) GetTodos(c *gin.Context) {
-	response := Response.ResponseApi{}
+	var responses Responses.ResponseApi
 	result, err := controller.service.GetTodos();
 
 	if err != nil {
-		response.StatusCode = Constants.ERROR_RC500
-		response.StatusMessage = Constants.ERROR_RM500
-		response.Data = err
-		c.JSON(http.StatusOK, response)
+		responses = Formatters.Format(err, Constants.ERROR_RC500, Constants.ERROR_RM500)
+		c.JSON(http.StatusOK, responses)
 		return
 	}
 
-	response.StatusCode = Constants.SUCCESS_RC200
-	response.StatusMessage = Constants.SUCCESS_RM200
-	response.Data = result
-
-	c.JSON(http.StatusOK, response)
+	responses = Formatters.Format(result, Constants.SUCCESS_RC200, Constants.SUCCESS_RM200)
+	c.JSON(http.StatusOK, responses)
 }
 
 // Create a Todo
 func (controller *todoController) CreateATodo(c *gin.Context) {
-	response := Response.ResponseApi{}
+	var responses Responses.ResponseApi
 
 	var todo Models.Todo
 	c.BindJSON(&todo)
@@ -50,45 +46,36 @@ func (controller *todoController) CreateATodo(c *gin.Context) {
 	result, err := controller.service.CreateATodo(todo)
 
 	if err != nil {
-		response.StatusCode = Constants.ERROR_RC500
-		response.StatusMessage = Constants.ERROR_RM500
-		response.Data = err
-		c.JSON(http.StatusOK, response)
+		responses = Formatters.Format(err, Constants.ERROR_RC500, Constants.ERROR_RM500)
+		c.JSON(http.StatusOK, responses)
 		return
 	}
 
-	response.StatusCode = Constants.SUCCESS_RC200
-	response.StatusMessage = Constants.SUCCESS_RM200
-	response.Data = result
-
-	c.JSON(http.StatusOK, response)
+	responses = Formatters.Format(result, Constants.SUCCESS_RC200, Constants.SUCCESS_RM200)
+	c.JSON(http.StatusOK, responses)
 }
 
 // Get a particular Todo with id
 func (controller *todoController) GetATodo(c *gin.Context) {
-	response := Response.ResponseApi{}
+	var responses Responses.ResponseApi
 
 	id := c.Params.ByName("id")
 	result, err := controller.service.GetATodo(id)
 
 	if err != nil {
-		response.StatusCode = Constants.ERROR_RC404
-		response.StatusMessage = Constants.ERROR_RM404
-		response.Data = err
-		c.JSON(http.StatusOK, response)
+		responses := Formatters.Format(err, Constants.ERROR_RC404, Constants.ERROR_RM404)
+
+		c.JSON(http.StatusOK, responses)
 		return
 	}
 
-	response.StatusCode = Constants.SUCCESS_RC200
-	response.StatusMessage = Constants.SUCCESS_RM200
-	response.Data = result
-
-	c.JSON(http.StatusOK, response)
+	responses = Formatters.Format(result, Constants.SUCCESS_RC200, Constants.SUCCESS_RM200)
+	c.JSON(http.StatusOK, responses)
 }
 
 // Update an existing Todo
 func (controller *todoController) UpdateATodo(c *gin.Context) {
-	response := Response.ResponseApi{}
+	var responses Responses.ResponseApi
 	
 	var todo Models.Todo
 	e := c.BindJSON(&todo)
@@ -99,44 +86,36 @@ func (controller *todoController) UpdateATodo(c *gin.Context) {
 	id := c.Params.ByName("id")
 	result, err := controller.service.UpdateATodo(todo, id)
 	if err != nil {
-		response.StatusCode = Constants.ERROR_RC500
-		response.StatusMessage = Constants.ERROR_RM500
-		response.Data = result
-		c.JSON(http.StatusOK, response)
+		responses = Formatters.Format(err, Constants.ERROR_RC500, Constants.ERROR_RM500)
+		c.JSON(http.StatusOK, responses)
 		return
 	}
 
-	response.StatusCode = Constants.SUCCESS_RC200
-	response.StatusMessage = Constants.SUCCESS_RM200
-	response.Data = result
-
-	c.JSON(http.StatusOK, response)	
+	responses = Formatters.Format(result, Constants.SUCCESS_RC200, Constants.SUCCESS_RM200)
+	c.JSON(http.StatusOK, responses)	
 }
 
 // Delete a Todo
 func (controller *todoController) DeleteATodo(c *gin.Context) {
-	response := Response.ResponseApi{}
+	var responses Responses.ResponseApi
 	var todo Models.Todo
 	id := c.Params.ByName("id")
 
 	todo, err := controller.service.GetATodo(id)
 	if err != nil {
-		response.StatusCode = Constants.ERROR_RC404
-		response.StatusMessage = Constants.ERROR_RM404
-		response.Data = err
-		c.JSON(http.StatusOK, response)
+		responses = Formatters.Format(err, Constants.ERROR_RC404, Constants.ERROR_RM404)
+		c.JSON(http.StatusOK, responses)
 		return
 	}
 	
 	errDelete := controller.service.DeleteATodo(todo, id)
 
 	if errDelete != nil {
-		response.StatusCode = Constants.ERROR_RC500
-		response.StatusMessage = Constants.ERROR_RM500
-		response.Data = err
-		c.JSON(http.StatusOK, response)
+		responses = Formatters.Format(errDelete, Constants.ERROR_RC404, Constants.ERROR_RM404)
+		c.JSON(http.StatusOK, responses)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"id: " + id: "deleted"})
+	responses = Formatters.Format(id, Constants.SUCCESS_RC200, Constants.SUCCESS_RM200)
+	c.JSON(http.StatusOK, responses)
 }
