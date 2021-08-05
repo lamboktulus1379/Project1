@@ -3,7 +3,7 @@ package Repositories
 import (
 	"fmt"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"mygra.tech/project1/Models"
 )
 
@@ -12,7 +12,7 @@ type TodoRepository interface {
 	GetATodo(id string) (Models.Todo, error)
 	CreateATodo(todo Models.Todo) (Models.Todo, error)
 	UpdateATodo(todo Models.Todo, id string) (Models.Todo, error)
-	DeleteATodo(todo Models.Todo, id string) (error)
+	DeleteATodo(todo Models.Todo, id string) error
 }
 
 type todoRepository struct {
@@ -48,12 +48,16 @@ func (repository *todoRepository) GetATodo(id string) (Models.Todo, error) {
 }
 
 func (repository *todoRepository) CreateATodo(todo Models.Todo) (Models.Todo, error) {
-	err := repository.db.Create(&todo).Error
+	tx := repository.db.Begin()
+
+	err := tx.Create(&todo).Error
 
 	if err != nil {
-		fmt.Println("Error: ", err);
+		fmt.Println("Error: ", err)
+		tx.Rollback()
 		return todo, err
 	}
+	tx.Commit()
 
 	return todo, nil
 }
@@ -68,14 +72,12 @@ func (repository *todoRepository) UpdateATodo(todoInput Models.Todo, id string) 
 	err := repository.db.Save(&todo).Error
 
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("Error occurred")
 		return todo, err
 	}
 	return todo, nil
 }
 
-func (repository *todoRepository) DeleteATodo(todo Models.Todo, id string) (error) {
+func (repository *todoRepository) DeleteATodo(todo Models.Todo, id string) error {
 	err := repository.db.Where("id = ?", id).Delete(&todo).Error
 	if err != nil {
 		fmt.Println(err)

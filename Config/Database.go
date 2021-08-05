@@ -6,24 +6,25 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"mygra.tech/project1/Models"
 )
 
 var DB *gorm.DB
 
 type DBConfig struct {
-	Host string
-	Port int
-	User string
-	DBName string
+	Host     string
+	Port     int
+	User     string
+	DBName   string
 	Password string
 }
 
 func DatabaseOpen() *gorm.DB {
 	// Creating a connection to the database
-	db, err := gorm.Open(os.Getenv("DB_TYPE"), DbURL(BuildDBConfig()));
+	db, err := gorm.Open(mysql.Open(DbURL(BuildDBConfig())), &gorm.Config{})
 	if err != nil {
 		fmt.Println("Statuses: ", err)
 	}
@@ -32,6 +33,7 @@ func DatabaseOpen() *gorm.DB {
 
 	// Run the migrations: todo struct
 	db.AutoMigrate(&Models.Todo{})
+	db.AutoMigrate(&Models.User{})
 
 	return db
 }
@@ -50,10 +52,10 @@ func BuildDBConfig() *DBConfig {
 	}
 
 	dbConfig := DBConfig{
-		Host: os.Getenv("DB_HOST"),
-		Port: port,
-		User: os.Getenv("DB_USER"),
-		DBName: os.Getenv("DB_NAME"),
+		Host:     os.Getenv("DB_HOST"),
+		Port:     port,
+		User:     os.Getenv("DB_USER"),
+		DBName:   os.Getenv("DB_NAME"),
 		Password: os.Getenv("DB_PASSWORD"),
 	}
 
