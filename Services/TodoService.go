@@ -7,13 +7,12 @@ import (
 	"mygra.tech/project1/Repositories"
 )
 
-
 type TodoService interface {
-	GetTodos() ([]Models.Todo, error)
+	GetTodos(pagination *Models.Pagination) ([]Models.Todo, error)
 	GetATodo(id string) (Models.Todo, error)
 	CreateATodo(todo Models.Todo) (Models.Todo, error)
 	UpdateATodo(todo Models.Todo, id string) (Models.Todo, error)
-	DeleteATodo(todo Models.Todo, id string) (error)
+	DeleteATodo(todo Models.Todo, id string) error
 }
 
 type todoService struct {
@@ -24,8 +23,8 @@ func InitTodoService(repository Repositories.TodoRepository) *todoService {
 	return &todoService{repository}
 }
 
-func (service *todoService) GetTodos() ([]Models.Todo, error){
-	result, err := service.repository.GetTodos()
+func (service *todoService) GetTodos(pagination *Models.Pagination) ([]Models.Todo, error) {
+	result, err := service.repository.GetTodos(pagination)
 
 	if err != nil {
 		return result, err
@@ -65,7 +64,7 @@ func (service *todoService) UpdateATodo(todo Models.Todo, id string) (Models.Tod
 	return result, nil
 }
 
-func (service *todoService) DeleteATodo(todo Models.Todo, id string) (error) {
+func (service *todoService) DeleteATodo(todo Models.Todo, id string) error {
 	err := service.repository.DeleteATodo(todo, id)
 
 	if err != nil {

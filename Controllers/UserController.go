@@ -10,6 +10,7 @@ import (
 	"mygra.tech/project1/Services"
 	"mygra.tech/project1/Utils/Constants"
 	"mygra.tech/project1/Utils/Formatters"
+	Utils "mygra.tech/project1/Utils/Paginations"
 	"mygra.tech/project1/Utils/Responses"
 )
 
@@ -24,7 +25,9 @@ func InitUserController(service Services.UserService) *userController {
 // List all users
 func (controller *userController) GetUsers(c *gin.Context) {
 	var responses Responses.ResponseApi
-	result, err := controller.service.GetUsers()
+
+	pagination := Utils.GeneratePaginationFromRequest(c)
+	result, err := controller.service.GetUsers(&pagination)
 
 	if err != nil {
 		responses = Formatters.Format(err, Constants.ERROR_RC500, Constants.ERROR_RM500)

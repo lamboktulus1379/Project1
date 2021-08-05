@@ -8,7 +8,7 @@ import (
 )
 
 type TodoRepository interface {
-	GetTodos() ([]Models.Todo, error)
+	GetTodos(pagination *Models.Pagination) ([]Models.Todo, error)
 	GetATodo(id string) (Models.Todo, error)
 	CreateATodo(todo Models.Todo) (Models.Todo, error)
 	UpdateATodo(todo Models.Todo, id string) (Models.Todo, error)
@@ -23,10 +23,12 @@ func InitTodoRepository(db *gorm.DB) *todoRepository {
 	return &todoRepository{db}
 }
 
-func (repository *todoRepository) GetTodos() ([]Models.Todo, error) {
+func (repository *todoRepository) GetTodos(pagination *Models.Pagination) ([]Models.Todo, error) {
+	offset := (pagination.Page - 1) * pagination.Limit
+
 	todos := []Models.Todo{}
 
-	err := repository.db.Find(&todos).Error
+	err := repository.db.Limit(pagination.Limit).Offset(offset).Order(pagination.Sort).Find(&todos).Error
 
 	if err != nil {
 		return todos, err

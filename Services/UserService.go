@@ -8,7 +8,7 @@ import (
 )
 
 type UserService interface {
-	GetUsers() ([]Models.User, error)
+	GetUsers(pagination *Models.Pagination) ([]Models.User, error)
 	GetAUser(id string) (Models.User, error)
 	CreateAUser(user Models.User) (Models.User, error)
 	UpdateAUser(user Models.User, id string) (Models.User, error)
@@ -23,8 +23,8 @@ func InitUserService(repository Repositories.UserRepository) *userService {
 	return &userService{repository}
 }
 
-func (service *userService) GetUsers() ([]Models.User, error) {
-	result, err := service.repository.GetUsers()
+func (service *userService) GetUsers(pagination *Models.Pagination) ([]Models.User, error) {
+	result, err := service.repository.GetUsers(pagination)
 
 	if err != nil {
 		return result, err

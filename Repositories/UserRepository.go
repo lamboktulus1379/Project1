@@ -8,7 +8,7 @@ import (
 )
 
 type UserRepository interface {
-	GetUsers() ([]Models.User, error)
+	GetUsers(pagination *Models.Pagination) ([]Models.User, error)
 	GetAUser(id string) (Models.User, error)
 	CreateAUser(user Models.User) (Models.User, error)
 	UpdateAUser(user Models.User, id string) (Models.User, error)
@@ -23,10 +23,12 @@ func InitUserRepository(db *gorm.DB) *userRepository {
 	return &userRepository{db}
 }
 
-func (repository *userRepository) GetUsers() ([]Models.User, error) {
+func (repository *userRepository) GetUsers(pagination *Models.Pagination) ([]Models.User, error) {
+	offset := (pagination.Page - 1) * pagination.Limit
+
 	users := []Models.User{}
 
-	err := repository.db.Preload("Todo").Find(&users).Error
+	err := repository.db.Preload("Todo").Limit(pagination.Limit).Offset(offset).Order(pagination.Sort).Find(&users).Error
 
 	if err != nil {
 		return users, err

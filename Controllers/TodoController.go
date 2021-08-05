@@ -10,6 +10,7 @@ import (
 	"mygra.tech/project1/Services"
 	"mygra.tech/project1/Utils/Constants"
 	"mygra.tech/project1/Utils/Formatters"
+	Utils "mygra.tech/project1/Utils/Paginations"
 	"mygra.tech/project1/Utils/Responses"
 )
 
@@ -24,7 +25,9 @@ func InitTodoController(service Services.TodoService) *todoController {
 // List all todos
 func (controller *todoController) GetTodos(c *gin.Context) {
 	var responses Responses.ResponseApi
-	result, err := controller.service.GetTodos();
+
+	pagination := Utils.GeneratePaginationFromRequest(c)
+	result, err := controller.service.GetTodos(&pagination)
 
 	if err != nil {
 		responses = Formatters.Format(err, Constants.ERROR_RC500, Constants.ERROR_RM500)
@@ -76,7 +79,7 @@ func (controller *todoController) GetATodo(c *gin.Context) {
 // Update an existing Todo
 func (controller *todoController) UpdateATodo(c *gin.Context) {
 	var responses Responses.ResponseApi
-	
+
 	var todo Models.Todo
 	e := c.BindJSON(&todo)
 	if e != nil {
@@ -92,7 +95,7 @@ func (controller *todoController) UpdateATodo(c *gin.Context) {
 	}
 
 	responses = Formatters.Format(result, Constants.SUCCESS_RC200, Constants.SUCCESS_RM200)
-	c.JSON(http.StatusOK, responses)	
+	c.JSON(http.StatusOK, responses)
 }
 
 // Delete a Todo
@@ -107,7 +110,7 @@ func (controller *todoController) DeleteATodo(c *gin.Context) {
 		c.JSON(http.StatusOK, responses)
 		return
 	}
-	
+
 	errDelete := controller.service.DeleteATodo(todo, id)
 
 	if errDelete != nil {
