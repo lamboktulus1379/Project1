@@ -10,6 +10,7 @@ type User struct {
 	PhoneNumber string    `json:"phoneNumber"`
 	CreatedAt   time.Time `json:"createdAt"`
 	Todo        []Todo    `json:"todos"`
+	Order       []Order   `json:"orders"`
 }
 
 func (b *User) TableName() string {

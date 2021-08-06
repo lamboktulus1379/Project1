@@ -24,7 +24,9 @@ type DBConfig struct {
 
 func DatabaseOpen() *gorm.DB {
 	// Creating a connection to the database
-	db, err := gorm.Open(mysql.Open(DbURL(BuildDBConfig())), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(DbURL(BuildDBConfig())), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil {
 		fmt.Println("Statuses: ", err)
 	}
@@ -32,8 +34,7 @@ func DatabaseOpen() *gorm.DB {
 	// defer db.Close()
 
 	// Run the migrations: todo struct
-	db.AutoMigrate(&Models.Todo{})
-	db.AutoMigrate(&Models.User{})
+	db.AutoMigrate(&Models.Todo{}, &Models.User{}, &Models.Product{}, &Models.Order{})
 
 	return db
 }

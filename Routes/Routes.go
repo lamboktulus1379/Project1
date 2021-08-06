@@ -21,6 +21,16 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	userController := Controllers.InitUserController(userService)
 	USER_PATH := "users"
 
+	productRepository := Repositories.InitProductRepository(db)
+	productService := Services.InitProductService(productRepository)
+	productController := Controllers.InitProductController(productService)
+	PRODUCT_PATH := "products"
+
+	orderRepository := Repositories.InitOrderRepository(db)
+	orderService := Services.InitOrderService(orderRepository, productRepository)
+	orderController := Controllers.InitOrderController(orderService, productService)
+	ORDER_PATH := "orders"
+
 	v1 := r.Group("/v1")
 	{
 		v1.GET(TODO_PATH, todoController.GetTodos)
@@ -34,6 +44,18 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		v1.GET(USER_PATH+"/:id", userController.GetAUser)
 		v1.PUT(USER_PATH+"/:id", userController.UpdateAUser)
 		v1.DELETE(USER_PATH+"/:id", userController.DeleteAUser)
+
+		v1.GET(PRODUCT_PATH, productController.GetProducts)
+		v1.POST(PRODUCT_PATH, productController.CreateAProduct)
+		v1.GET(PRODUCT_PATH+"/:id", productController.GetAProduct)
+		v1.PUT(PRODUCT_PATH+"/:id", productController.UpdateAProduct)
+		v1.DELETE(PRODUCT_PATH+"/:id", productController.DeleteAProduct)
+
+		v1.GET(ORDER_PATH, orderController.GetOrders)
+		v1.POST(ORDER_PATH, orderController.CreateAOrder)
+		v1.GET(ORDER_PATH+"/:id", orderController.GetAOrder)
+		v1.PUT(ORDER_PATH+"/:id", orderController.UpdateAOrder)
+		v1.DELETE(ORDER_PATH+"/:id", orderController.DeleteAOrder)
 	}
 
 	return r
