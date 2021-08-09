@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"mygra.tech/project1/Controllers"
+	"mygra.tech/project1/Middlewares"
 	"mygra.tech/project1/Repositories"
 	"mygra.tech/project1/Services"
 )
@@ -28,7 +29,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 	orderRepository := Repositories.InitOrderRepository(db)
 	orderService := Services.InitOrderService(orderRepository, productRepository)
-	orderController := Controllers.InitOrderController(orderService, productService)
+	orderController := Controllers.InitOrderController(orderService)
 	ORDER_PATH := "orders"
 
 	v1 := r.Group("/v1")
@@ -51,8 +52,8 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		v1.PUT(PRODUCT_PATH+"/:id", productController.UpdateAProduct)
 		v1.DELETE(PRODUCT_PATH+"/:id", productController.DeleteAProduct)
 
-		v1.GET(ORDER_PATH, orderController.GetOrders)
-		v1.POST(ORDER_PATH, orderController.CreateAOrder)
+		v1.GET(ORDER_PATH, Middlewares.DBTransactionMiddleware(db), orderController.GetOrders)
+		v1.POST(ORDER_PATH, Middlewares.DBTransactionMiddleware(db), orderController.CreateAOrder)
 		v1.GET(ORDER_PATH+"/:id", orderController.GetAOrder)
 		v1.PUT(ORDER_PATH+"/:id", orderController.UpdateAOrder)
 		v1.DELETE(ORDER_PATH+"/:id", orderController.DeleteAOrder)

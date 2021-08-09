@@ -3,6 +3,7 @@ package Repositories
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"gorm.io/gorm"
 	"mygra.tech/project1/Models"
@@ -16,6 +17,7 @@ type ProductRepository interface {
 	UpdateAProduct(product Models.Product, id string) (Models.Product, error)
 	DeleteAProduct(product Models.Product, id string) error
 	ReduceAmount(id string) (Models.Product, error)
+	WithTrx(trxHandle *gorm.DB) *productRepository
 }
 
 type productRepository struct {
@@ -24,6 +26,15 @@ type productRepository struct {
 
 func InitProductRepository(db *gorm.DB) *productRepository {
 	return &productRepository{db}
+}
+
+func (repository *productRepository) WithTrx(trxHandle *gorm.DB) *productRepository {
+	if trxHandle == nil {
+		log.Print("Transaction database not found")
+		return repository
+	}
+	repository.db = trxHandle
+	return repository
 }
 
 func (repository *productRepository) GetProducts(pagination *Models.Pagination) ([]Models.Product, error) {
@@ -81,7 +92,7 @@ func (repository *productRepository) UpdateAProduct(productInput Models.Product,
 	case "PREMIUM":
 		productType = Products.PREMIUM
 	default:
-		return product, errors.New("Product type not found!")
+		return product, errors.New("product type not found")
 	}
 
 	repository.db.Where("id = ?", id).Find(&product)
@@ -114,6 +125,11 @@ func (repository *productRepository) ReduceAmount(id string) (Models.Product, er
 	var product Models.Product
 
 	repository.db.Where("id = ?", id).Find(&product)
+
+	fmt.Println("Product: ", product)
+	if product.Amount == 0 {
+		return product, errors.New("product is out of stock")
+	}
 
 	product.Amount = product.Amount - 1
 	result, err := repository.UpdateAProduct(product, id)

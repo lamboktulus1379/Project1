@@ -3,6 +3,7 @@ package Services
 import (
 	"fmt"
 
+	"gorm.io/gorm"
 	"mygra.tech/project1/Models"
 	"mygra.tech/project1/Repositories"
 )
@@ -13,6 +14,7 @@ type OrderService interface {
 	CreateAOrder(order Models.Order) (Models.Order, error)
 	UpdateAOrder(order Models.Order, id string) (Models.Order, error)
 	DeleteAOrder(order Models.Order, id string) error
+	WithTrx(trxHandle *gorm.DB) *orderService
 }
 
 type orderService struct {
@@ -22,6 +24,11 @@ type orderService struct {
 
 func InitOrderService(repository Repositories.OrderRepository, productRepository Repositories.ProductRepository) *orderService {
 	return &orderService{repository, productRepository}
+}
+
+func (service *orderService) WithTrx(trxHandle *gorm.DB) *orderService {
+	service.repository = service.repository.WithTrx(trxHandle)
+	return service
 }
 
 func (service *orderService) GetOrders(pagination *Models.Pagination) ([]Models.Order, error) {
@@ -53,7 +60,7 @@ func (service *orderService) CreateAOrder(order Models.Order) (Models.Order, err
 	resultProductAmount, errReductProductAmount := service.productRepository.ReduceAmount(fmt.Sprint(order.ProductID))
 
 	if errReductProductAmount != nil {
-		fmt.Println(resultProductAmount)
+		fmt.Println(resultProductAmount, errReductProductAmount)
 		return result, errReductProductAmount
 	}
 

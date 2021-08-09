@@ -3,6 +3,7 @@ package Services
 import (
 	"fmt"
 
+	"gorm.io/gorm"
 	"mygra.tech/project1/Models"
 	"mygra.tech/project1/Repositories"
 )
@@ -14,6 +15,7 @@ type ProductService interface {
 	UpdateAProduct(product Models.Product, id string) (Models.Product, error)
 	DeleteAProduct(product Models.Product, id string) error
 	ReduceAmount(id string) (Models.Product, error)
+	WithTrx(trxHandle *gorm.DB) *productService
 }
 
 type productService struct {
@@ -22,6 +24,11 @@ type productService struct {
 
 func InitProductService(repository Repositories.ProductRepository) *productService {
 	return &productService{repository}
+}
+
+func (service *productService) WithTrx(trxHandle *gorm.DB) *productService {
+	service.repository = service.repository.WithTrx(trxHandle)
+	return service
 }
 
 func (service *productService) GetProducts(pagination *Models.Pagination) ([]Models.Product, error) {

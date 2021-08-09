@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/gorm"
 	"mygra.tech/project1/Models"
 	"mygra.tech/project1/Services"
 	"mygra.tech/project1/Utils/Constants"
@@ -15,24 +16,25 @@ import (
 )
 
 type orderController struct {
-	service        Services.OrderService
-	productService Services.ProductService
+	service Services.OrderService
 }
 
-func InitOrderController(service Services.OrderService, productService Services.ProductService) *orderController {
-	return &orderController{service, productService}
+func InitOrderController(service Services.OrderService) *orderController {
+	return &orderController{service}
 }
 
 // List all orders
 func (controller *orderController) GetOrders(c *gin.Context) {
 	var responses Responses.ResponseApi
 
+	trxHandle := c.MustGet("db_trx").(*gorm.DB)
+
 	pagination := Utils.GeneratePaginationFromRequest(c)
-	result, err := controller.service.GetOrders(&pagination)
+	result, err := controller.service.WithTrx(trxHandle).GetOrders(&pagination)
 
 	if err != nil {
 		responses = Formatters.Format(err, Constants.ERROR_RC500, Constants.ERROR_RM500)
-		c.JSON(http.StatusOK, responses)
+		c.JSON(http.StatusInternalServerError, responses)
 		return
 	}
 
@@ -44,14 +46,17 @@ func (controller *orderController) GetOrders(c *gin.Context) {
 func (controller *orderController) CreateAOrder(c *gin.Context) {
 	var responses Responses.ResponseApi
 
+	trxHandle := c.MustGet("db_trx").(*gorm.DB)
+
 	var order Models.Order
 	c.BindJSON(&order)
 
-	result, err := controller.service.CreateAOrder(order)
+	result, err := controller.service.WithTrx(trxHandle).CreateAOrder(order)
 
 	if err != nil {
 		responses = Formatters.Format(err, Constants.ERROR_RC500, Constants.ERROR_RM500)
-		c.JSON(http.StatusOK, responses)
+		c.JSON(http.StatusInternalServerError, responses)
+		trxHandle.Rollback()
 		return
 	}
 
@@ -68,8 +73,7 @@ func (controller *orderController) GetAOrder(c *gin.Context) {
 
 	if err != nil {
 		responses := Formatters.Format(err, Constants.ERROR_RC404, Constants.ERROR_RM404)
-
-		c.JSON(http.StatusOK, responses)
+		c.JSON(http.StatusNotFound, responses)
 		return
 	}
 
@@ -91,7 +95,7 @@ func (controller *orderController) UpdateAOrder(c *gin.Context) {
 	result, err := controller.service.UpdateAOrder(order, id)
 	if err != nil {
 		responses = Formatters.Format(err, Constants.ERROR_RC500, Constants.ERROR_RM500)
-		c.JSON(http.StatusOK, responses)
+		c.JSON(http.StatusInternalServerError, responses)
 		return
 	}
 
@@ -108,15 +112,15 @@ func (controller *orderController) DeleteAOrder(c *gin.Context) {
 	order, err := controller.service.GetAOrder(id)
 	if err != nil {
 		responses = Formatters.Format(err, Constants.ERROR_RC404, Constants.ERROR_RM404)
-		c.JSON(http.StatusOK, responses)
+		c.JSON(http.StatusNotFound, responses)
 		return
 	}
 
 	errDelete := controller.service.DeleteAOrder(order, id)
 
 	if errDelete != nil {
-		responses = Formatters.Format(errDelete, Constants.ERROR_RC404, Constants.ERROR_RM404)
-		c.JSON(http.StatusOK, responses)
+		responses = Formatters.Format(errDelete, Constants.ERROR_RC500, Constants.ERROR_RM500)
+		c.JSON(http.StatusInternalServerError, responses)
 		return
 	}
 

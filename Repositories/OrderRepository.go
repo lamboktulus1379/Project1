@@ -2,6 +2,7 @@ package Repositories
 
 import (
 	"fmt"
+	"log"
 
 	"gorm.io/gorm"
 	"mygra.tech/project1/Models"
@@ -13,6 +14,7 @@ type OrderRepository interface {
 	CreateAOrder(order Models.Order) (Models.Order, error)
 	UpdateAOrder(order Models.Order, id string) (Models.Order, error)
 	DeleteAOrder(order Models.Order, id string) error
+	WithTrx(trxHandle *gorm.DB) *orderRepository
 }
 
 type orderRepository struct {
@@ -21,6 +23,15 @@ type orderRepository struct {
 
 func InitOrderRepository(db *gorm.DB) *orderRepository {
 	return &orderRepository{db}
+}
+
+func (repository *orderRepository) WithTrx(trxHandle *gorm.DB) *orderRepository {
+	if trxHandle == nil {
+		log.Print("Transaction database not found")
+		return repository
+	}
+	repository.db = trxHandle
+	return repository
 }
 
 func (repository *orderRepository) GetOrders(pagination *Models.Pagination) ([]Models.Order, error) {
@@ -50,16 +61,11 @@ func (repository *orderRepository) GetAOrder(id string) (Models.Order, error) {
 }
 
 func (repository *orderRepository) CreateAOrder(order Models.Order) (Models.Order, error) {
-	tx := repository.db.Begin()
-
-	err := tx.Create(&order).Error
+	err := repository.db.Create(&order).Error
 
 	if err != nil {
-		fmt.Println("Error: ", err)
-		tx.Rollback()
 		return order, err
 	}
-	tx.Commit()
 
 	return order, nil
 }
