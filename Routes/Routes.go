@@ -1,16 +1,25 @@
 package Routes
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"mygra.tech/project1/Controllers"
 	"mygra.tech/project1/Middlewares"
 	"mygra.tech/project1/Repositories"
 	"mygra.tech/project1/Services"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "github.com/swaggo/gin-swagger/example/basic/docs"
 )
 
 func SetupRouter(db *gorm.DB) *gin.Engine {
-	r := gin.Default()
+	r := gin.New()
+
+	url := ginSwagger.URL(os.Getenv("SERVER_HOST") + ":" + os.Getenv("SERVER_PORT") + "/swagger/doc.json")
 
 	todoRepository := Repositories.InitTodoRepository(db)
 	todoService := Services.InitTodoService(todoRepository)
@@ -31,6 +40,8 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	orderService := Services.InitOrderService(orderRepository, productRepository)
 	orderController := Controllers.InitOrderController(orderService)
 	ORDER_PATH := "orders"
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	v1 := r.Group("/v1")
 	{

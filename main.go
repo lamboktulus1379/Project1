@@ -19,12 +19,12 @@ func main() {
 	Config.InitCassandra()
 	
 	db := Config.DatabaseOpen()
-	
+
 	// Setup routes
 	r := Routes.SetupRouter(db)
 
 	// Setup port
-	serverPort := os.Getenv("SERVER_PORT");
+	serverPort := os.Getenv("SERVER_PORT")
 
 	// Running
 	r.Run(":" + serverPort)
