@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.7.3
 	github.com/go-redis/redis v6.15.9+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/gocql/gocql v0.0.0-20210707082121-9a3953d1826d
 	github.com/joho/godotenv v1.3.0
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.3.1

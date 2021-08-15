@@ -11,10 +11,13 @@ import (
 
 func main() {
 	err := godotenv.Load(".env")
+
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
 
+	Config.InitCassandra()
+	
 	db := Config.DatabaseOpen()
 
 	// Setup routes
