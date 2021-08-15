@@ -1,15 +1,18 @@
 package Controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"mygra.tech/project1/Config"
 	"mygra.tech/project1/Models"
 	"mygra.tech/project1/Services"
 	"mygra.tech/project1/Utils/Constants"
 	"mygra.tech/project1/Utils/Formatters"
+	"mygra.tech/project1/Utils/Helpers/Log"
 	Utils "mygra.tech/project1/Utils/Paginations"
 	"mygra.tech/project1/Utils/Responses"
 )
@@ -41,6 +44,10 @@ func (controller *userController) GetUsers(c *gin.Context) {
 
 // Create a User
 func (controller *userController) CreateAUser(c *gin.Context) {
+	client, err := Config.InitRedis()
+	if err != nil {
+		Log.ERROR(err.Error())
+	}
 	var responses Responses.ResponseApi
 
 	var user Models.User
@@ -55,6 +62,22 @@ func (controller *userController) CreateAUser(c *gin.Context) {
 	}
 
 	responses = Formatters.Format(result, Constants.SUCCESS_RC200, Constants.SUCCESS_RM200)
+	json, err := json.Marshal(responses)
+	if err != nil {
+		Log.ERROR(err.Error())
+	}
+	const name = "UserCreate"
+	err = client.Set(name, json, 0).Err()
+
+	if err != nil {
+		Log.ERROR(err.Error())
+	}
+
+	val, err := client.Get(name).Result()
+	if err != nil {
+		Log.ERROR(err.Error())
+	}
+	Log.DEBUG(val)
 	c.JSON(http.StatusOK, responses)
 }
 

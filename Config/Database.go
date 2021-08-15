@@ -22,6 +22,8 @@ type DBConfig struct {
 	Password string
 }
 
+const ()
+
 func DatabaseOpen() *gorm.DB {
 	// Creating a connection to the database
 	db, err := gorm.Open(mysql.Open(DbURL(BuildDBConfig())), &gorm.Config{
