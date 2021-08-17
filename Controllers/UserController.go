@@ -1,12 +1,18 @@
 package Controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
 	"mygra.tech/project1/Config"
 	"mygra.tech/project1/Models"
 	"mygra.tech/project1/Services"
@@ -27,6 +33,10 @@ func InitUserController(service Services.UserService) *userController {
 
 // List all users
 func (controller *userController) GetUsers(c *gin.Context) {
+	tracer, closer := initJaeger("get-users")
+	defer closer.Close()
+	opentracing.SetGlobalTracer(tracer)
+
 	var responses Responses.ResponseApi
 
 	pagination := Utils.GeneratePaginationFromRequest(c)
@@ -39,7 +49,30 @@ func (controller *userController) GetUsers(c *gin.Context) {
 	}
 
 	responses = Formatters.Format(result, Constants.SUCCESS_RC200, Constants.SUCCESS_RM200)
+	responseFmt := fmt.Sprint(responses)
+
+	span := tracer.StartSpan("get-users")
+	span.SetTag("request-api-get-users", "v1/users")
+
+	defer span.Finish()
+
+	ctx := opentracing.ContextWithSpan(context.Background(), span)
+
 	c.JSON(http.StatusOK, responses)
+	printResponse(ctx, responseFmt)
+}
+
+func printResponse(ctx context.Context, response string) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "printResponse")
+	defer span.Finish()
+
+	span.LogFields(
+		log.String("event", "print-response"),
+		log.String("value", response),
+	)
+
+	// println(response)
+	span.LogKV("event", "println")
 }
 
 // Create a User
@@ -144,4 +177,24 @@ func (controller *userController) DeleteAUser(c *gin.Context) {
 
 	responses = Formatters.Format(id, Constants.SUCCESS_RC200, Constants.SUCCESS_RM200)
 	c.JSON(http.StatusOK, responses)
+}
+
+// initJaeger returns an instance of Jaeger Tracer that samples 100% of traces and logs all spans to stdout.
+func initJaeger(service string) (opentracing.Tracer, io.Closer) {
+	cfg := &config.Configuration{
+		ServiceName: service,
+		Sampler: &config.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &config.ReporterConfig{
+			LogSpans: true,
+		},
+	}
+	tracer, closer, err := cfg.NewTracer(config.Logger(jaeger.StdLogger))
+
+	if err != nil {
+		panic(fmt.Sprintf("ERROR: cannot init Jaeger: %v\n", err))
+	}
+	return tracer, closer
 }
