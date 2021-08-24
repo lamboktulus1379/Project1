@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -19,23 +20,30 @@ import (
 
 func main() {
 	err := godotenv.Load(".env")
+	ctx := context.Background()
 
+	
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
-
+	
+	do3Sum()
+	
 	// setupJaeger()
-
-	Config.InitCassandra()
-
+	
+	// Config.InitCassandra()
+	
 	db := Config.DatabaseOpen()
-
+	
 	// Setup routes
 	r := Routes.SetupRouter(db)
-
+	
 	// Setup port
 	serverPort := os.Getenv("SERVER_PORT")
-
+	
+	go Config.Produce(ctx)
+	Config.Consume(ctx)
+	
 	// Running
 	r.Run(":" + serverPort)
 }
@@ -71,4 +79,8 @@ func setupJaeger() {
 	// Set the singleton opentracing.Tracer with the Jaeger tracer.
 	opentracing.SetGlobalTracer(tracer)
 	defer closer.Close()
+}
+
+func do3Sum() {
+	
 }
