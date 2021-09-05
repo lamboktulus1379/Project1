@@ -41,6 +41,7 @@ func TestOrderHttpMustHaveNonNegativeProductAmount(t *testing.T) {
 	go ProcessHttp(r, w, req, "Test")
 
 	if w.Code == http.StatusOK {
+		fmt.Println(w.Body)
 		t.Log(w.Body)
 		t.Logf("Expected to get status %d is same ast %d\n", http.StatusOK, w.Code)
 	} else {

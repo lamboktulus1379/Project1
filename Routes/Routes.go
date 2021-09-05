@@ -41,6 +41,8 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	orderController := Controllers.InitOrderController(orderService)
 	ORDER_PATH := "orders"
 
+	RANDOM_PATH := "randoms"
+
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	v1 := r.Group("/v1")
@@ -68,6 +70,8 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		v1.GET(ORDER_PATH+"/:id", orderController.GetAOrder)
 		v1.PUT(ORDER_PATH+"/:id", orderController.UpdateAOrder)
 		v1.DELETE(ORDER_PATH+"/:id", orderController.DeleteAOrder)
+
+		v1.GET(RANDOM_PATH, Controllers.GetRandom)
 	}
 
 	return r

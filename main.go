@@ -26,9 +26,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
+<<<<<<< HEAD
 	
 	do3Sum()
 	
+=======
+
+	callHttp()
+
+>>>>>>> 61f8f77 (Added Typing Controller)
 	// setupJaeger()
 	
 	// Config.InitCassandra()
@@ -81,6 +87,21 @@ func setupJaeger() {
 	defer closer.Close()
 }
 
+<<<<<<< HEAD
 func do3Sum() {
 	
+=======
+func myfunc(ch chan int) {
+	fmt.Println(234 + <-ch)
+}
+
+func callHttp() {
+	fmt.Println("start Main method")
+	// Creating a channel
+	ch := make(chan int)
+
+	go myfunc(ch)
+	ch <- 23
+	fmt.Println("End Main method")
+>>>>>>> 61f8f77 (Added Typing Controller)
 }

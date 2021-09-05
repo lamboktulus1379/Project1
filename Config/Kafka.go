@@ -1,5 +1,6 @@
 package Config
 
+<<<<<<< HEAD
 import (
 	"context"
 	"fmt"
@@ -54,3 +55,10 @@ func Consume(ctx context.Context) {
 		fmt.Println("received: ", string(msg.Value))
 	}
 }
+=======
+import "fmt"
+
+func Send() {
+	fmt.Print("Send kafka")
+}
+>>>>>>> 61f8f77 (Added Typing Controller)
