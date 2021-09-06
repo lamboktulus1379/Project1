@@ -22,34 +22,27 @@ func main() {
 	err := godotenv.Load(".env")
 	ctx := context.Background()
 
-	
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
-<<<<<<< HEAD
-	
-	do3Sum()
-	
-=======
 
 	callHttp()
 
->>>>>>> 61f8f77 (Added Typing Controller)
 	// setupJaeger()
-	
+
 	// Config.InitCassandra()
-	
+
 	db := Config.DatabaseOpen()
-	
+
 	// Setup routes
 	r := Routes.SetupRouter(db)
-	
+
 	// Setup port
 	serverPort := os.Getenv("SERVER_PORT")
-	
-	go Config.Produce(ctx)
+
+	Config.Produce(ctx)
 	Config.Consume(ctx)
-	
+
 	// Running
 	r.Run(":" + serverPort)
 }
@@ -87,10 +80,6 @@ func setupJaeger() {
 	defer closer.Close()
 }
 
-<<<<<<< HEAD
-func do3Sum() {
-	
-=======
 func myfunc(ch chan int) {
 	fmt.Println(234 + <-ch)
 }
@@ -103,5 +92,4 @@ func callHttp() {
 	go myfunc(ch)
 	ch <- 23
 	fmt.Println("End Main method")
->>>>>>> 61f8f77 (Added Typing Controller)
 }

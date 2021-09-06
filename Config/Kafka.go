@@ -1,6 +1,5 @@
 package Config
 
-<<<<<<< HEAD
 import (
 	"context"
 	"fmt"
@@ -11,7 +10,7 @@ import (
 )
 
 const (
-	topic         = "message-log"
+	topic         = "testTopic"
 	brokerAddress = "localhost:9092"
 )
 
@@ -20,12 +19,12 @@ func Produce(ctx context.Context) {
 
 	w := kafka.NewWriter(kafka.WriterConfig{
 		Brokers: []string{brokerAddress},
-		Topic: topic,
+		Topic:   topic,
 	})
 
 	for {
 		err := w.WriteMessages(ctx, kafka.Message{
-			Key: []byte(strconv.Itoa(i)),
+			Key:   []byte(strconv.Itoa(i)),
 			Value: []byte("this is message" + strconv.Itoa(i)),
 		})
 
@@ -43,7 +42,7 @@ func Produce(ctx context.Context) {
 func Consume(ctx context.Context) {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{brokerAddress},
-		Topic: topic,
+		Topic:   topic,
 		GroupID: "my-gra-tech",
 	})
 
@@ -55,10 +54,3 @@ func Consume(ctx context.Context) {
 		fmt.Println("received: ", string(msg.Value))
 	}
 }
-=======
-import "fmt"
-
-func Send() {
-	fmt.Print("Send kafka")
-}
->>>>>>> 61f8f77 (Added Typing Controller)

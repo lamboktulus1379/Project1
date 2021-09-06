@@ -11,9 +11,9 @@ require (
 	github.com/gocql/gocql v0.0.0-20210707082121-9a3953d1826d
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.3.0
-	github.com/kr/pretty v0.2.1 // indirect
 	github.com/onsi/gomega v1.15.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0
+	github.com/segmentio/kafka-go v0.4.17
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.3.1
 	github.com/swaggo/swag v1.7.0
